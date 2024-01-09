@@ -1,0 +1,6 @@
+
+class AutominerException(Exception):
+    ...
+
+class NotRunning(AutominerException):
+    ...
