@@ -1,3 +1,5 @@
 *.png
+!letters.png
 *.py[cod]
 venv/
+testing/

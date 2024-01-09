@@ -36,9 +36,23 @@ def text_pixel_size(array):
         if found and not value:
             return i
 
+def figure_out_pixel_size(array) -> int:
+    seen = False
+    i = 0
+    for v in array.flatten():
+        seen |= v
+        if seen:
+            i +=1
+        if seen and not v:
+            break
+    return i - 1
+
+
+
 
 def resample_debug_text(array):
-    return array[45::5, 18::5]  # TODO compute these from screen size
+    pixel_size = figure_out_pixel_size(array)
+    return np.invert(array[45::pixel_size, 18::pixel_size][1:,1:])  # TODO compute these from screen size
 
 
 def first_true_coord(array):
