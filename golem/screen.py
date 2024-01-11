@@ -4,7 +4,7 @@ import numpy as np  # type: ignore
 import pywinauto  # type: ignore
 import pywinauto.findwindows  # type: ignore
 
-import autominer.exceptions
+import golem.exceptions
 
 ACTIVE_TEXT = 221
 
@@ -15,7 +15,7 @@ def minecraft_window():
             title_re="Minecraft 1.20.4", class_name="GLFW30"
         )
     except pywinauto.findwindows.ElementNotFoundError:
-        raise autominer.exceptions.NotRunning()
+        raise golem.exceptions.NotRunning()
     return app.top_window()
 
 
@@ -52,7 +52,7 @@ def figure_out_pixel_size(array) -> int:
 
 def resample_debug_text(array):
     pixel_size = figure_out_pixel_size(array)
-    return np.invert(array[45::pixel_size, 18::pixel_size][1:,1:])  # TODO compute these from screen size
+    return np.invert(array[45::pixel_size, 18::pixel_size][2:,1:])  # TODO compute these from screen size
 
 
 def first_true_coord(array):
