@@ -2,8 +2,9 @@
 import numpy as np
 from PIL import Image as img
 from collections import defaultdict
+import golem.screen
 
-_POSITIONS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,;:$#'!\"/?%&()@"
+_POSITIONS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-:$#\"!'/?%^()@.,;_[]"
 _LETTER_HEIGHT = 7
 _LETTER_WIDTH = 5
 _SPRITE_HEIGHT = 9
@@ -18,7 +19,7 @@ def raw_letter(l):
     col = i % _SPRITE_WIDTH
     ulx = (row * _LETTER_HEIGHT) + (row)
     uly = (col * _LETTER_WIDTH)  + (col)
-    return letters[ulx:ulx+_LETTER_HEIGHT, uly:uly+_LETTER_WIDTH]
+    return letters[ulx:ulx+_LETTER_HEIGHT+1, uly:uly+_LETTER_WIDTH]
 
 def mask(letter_array):
     return letter_array.any(axis=0).nonzero()[0]
@@ -36,3 +37,25 @@ def ocr(array):
         if np.array_equal(letter_array, check_array):
             return l, letter_array.shape[1]
     return None,0
+
+def read_line(window, linenumber: int = 0):
+    text = golem.screen.grab_debug_text(window)
+    resampled = golem.screen.resample_debug_text(text)[9*linenumber:,:]
+
+    message = ""
+    letter = ""
+    offset = 0
+
+    while letter != None:
+        letter,read = ocr(resampled[:,offset:])
+        if letter is None:
+            offset += 4
+            letter,read = ocr(resampled[:,offset:])
+            if letter is not None:
+                letter = " "+letter
+        offset += read+1
+        if letter is not None:
+            message += letter
+    return message
+
+

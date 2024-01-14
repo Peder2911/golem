@@ -1,5 +1,7 @@
 import time
 
+import datetime
+from PIL import Image as img
 import numpy as np  # type: ignore
 import pywinauto  # type: ignore
 import pywinauto.findwindows  # type: ignore
@@ -20,9 +22,11 @@ def minecraft_window():
 
 
 def grab_debug_text(window):
-    window.type_keys("{VK_ESCAPE}")
-    time.sleep(0.1)
-    screenshot = np.array(window.capture_as_image())
+    screenshot = np.zeros(0) 
+    while not screenshot.any():
+        screenshot = np.array(window.capture_as_image())
+
+    img.fromarray(screenshot).save(f"testing/scrot.png")
     return (screenshot == ACTIVE_TEXT).all(axis=2)
 
 
@@ -46,9 +50,6 @@ def figure_out_pixel_size(array) -> int:
         if seen and not v:
             break
     return i - 1
-
-
-
 
 def resample_debug_text(array):
     pixel_size = figure_out_pixel_size(array)

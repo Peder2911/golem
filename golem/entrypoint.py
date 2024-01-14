@@ -1,24 +1,31 @@
-from PIL import Image as img
+import time
+import itertools
+import asyncio
 import golem.screen
 import golem.letters
+import golem.minecraft.screen
+import golem.minecraft.proto
+
+async def circle(data: golem.minecraft.proto.MinecraftData,controller: golem.minecraft.proto.MinecraftController):
+    for direction in itertools.cycle(["forwards", "left", "backwards", "right"]):
+        coro = getattr(controller, direction)(.3)
+        await asyncio.sleep(.1)
+        controller.jump()
+        await coro
+        #print(data.location())
+        #print(data.rotation())
+        controller.say(str(data.location()))
 
 def entrypoint():
-    text = golem.screen.grab_debug_text(golem.screen.minecraft_window())
-    resampled = golem.screen.resample_debug_text(text)
+    window = golem.screen.minecraft_window()
+    window.type_keys("{VK_ESCAPE}")
+    time.sleep(0.05)
 
-    message = ""
-    letter = ""
-    offset = 0
-    while letter != None:
-        letter,read = golem.letters.ocr(resampled[:,offset:])
-        img.fromarray(resampled[:7,offset:offset+5]).save("testing/firsttry.png")
-        if letter is None:
-            offset += 4
-            letter,read = golem.letters.ocr(resampled[:,offset:])
-            if letter is not None:
-                letter = " "+letter
-            img.fromarray(resampled[:7,offset:offset+5]).save("testing/secondtry.png")
-        offset += read+1
-        if letter is not None:
-            message += letter
-    print(message)
+    data = golem.minecraft.screen.ScreenData(window)
+    controller = golem.minecraft.screen.ScreenController(window)
+    while True:
+        controller.look_left(8)
+        if int(data.rotation()[0]) == 90:
+            break
+
+    
