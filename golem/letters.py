@@ -1,8 +1,12 @@
 
+import datetime
+import logging
 import numpy as np
 from PIL import Image as img
 from collections import defaultdict
 import golem.screen
+
+logger = logging.getLogger(__name__)
 
 _POSITIONS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-:$#\"!'/?%^()@.,;_[]"
 _LETTER_HEIGHT = 7
@@ -31,11 +35,13 @@ def letter(l):
     return raw_letter(l)[:, masks[l]]
 
 def ocr(array):
+    chartried = 0
     for l in _POSITIONS:
         letter_array = letter(l)
         check_array = array[:letter_array.shape[0], :letter_array.shape[1]]
         if np.array_equal(letter_array, check_array):
             return l, letter_array.shape[1]
+        chartried += 1
     return None,0
 
 def read_line(window, linenumber: int = 0):
@@ -46,6 +52,7 @@ def read_line(window, linenumber: int = 0):
     letter = ""
     offset = 0
 
+    now = datetime.datetime.now()
     while letter != None:
         letter,read = ocr(resampled[:,offset:])
         if letter is None:
@@ -56,6 +63,7 @@ def read_line(window, linenumber: int = 0):
         offset += read+1
         if letter is not None:
             message += letter
+    logger.debug(f"Read line (spent {datetime.datetime.now()-now})")
     return message
 
 

@@ -1,3 +1,5 @@
+import datetime
+import logging
 import time
 
 import datetime
@@ -11,6 +13,8 @@ import golem.exceptions
 ACTIVE_TEXT = 221
 
 
+logger = logging.getLogger(__name__)
+
 def minecraft_window():
     try:
         app = pywinauto.Application().connect(
@@ -22,12 +26,12 @@ def minecraft_window():
 
 
 def grab_debug_text(window):
+    now = datetime.datetime.now()
     screenshot = np.zeros(0) 
     while not screenshot.any():
-        screenshot = np.array(window.capture_as_image())
-
-    img.fromarray(screenshot).save(f"testing/scrot.png")
-    return (screenshot == ACTIVE_TEXT).all(axis=2)
+        screenshot = (np.array(window.capture_as_image()) == ACTIVE_TEXT).all(axis=2)
+    logger.debug(f"Took a screenshot (spent {datetime.datetime.now()-now})")
+    return screenshot
 
 
 def text_pixel_size(array):
@@ -52,7 +56,10 @@ def figure_out_pixel_size(array) -> int:
     return i - 1
 
 def resample_debug_text(array):
+    logger.debug(f"Resampling debug text")
     pixel_size = figure_out_pixel_size(array)
+    if pixel_size == -1:
+        img.fromarray(array).save("testing/weird.png")
     return np.invert(array[45::pixel_size, 18::pixel_size][2:,1:])  # TODO compute these from screen size
 
 
